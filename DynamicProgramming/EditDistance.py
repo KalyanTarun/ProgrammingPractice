@@ -3,15 +3,17 @@
 Created on Fri Mar  1 15:46:47 2019
 
 @author: Tarun
+
+Contributors = ['Akhilez']  # :P
 """
-#Edit Distance problem using a recursive approach
+# Edit Distance problem using a recursive approach
 
 min_depth = 99999999
 nodes_recursive = []
 nodes_dynamic = []
 
 
-def EditDistRecursive(str1, str2, m, n):
+def edit_dist_recursive(str1, str2, m, n):
     # The following are three terminating conditions for the problem
 
     # If both the strings reach to end then no operations are required hence return 0
@@ -30,19 +32,25 @@ def EditDistRecursive(str1, str2, m, n):
 
     # If there is a match of characters then move both indices forward
     if str1[m] == str2[n]:
-        return EditDistRecursive(str1, str2, m + 1, n + 1)
+        return edit_dist_recursive(str1, str2, m + 1, n + 1)
 
     else:
-        # 2)Replace the source string i.e m+1,n+1
-        # 3)Remove the character in source string
-        return min(
-            EditDistRecursive(str1, str2, m, n + 1),  # 1)Insert into source string i.e m,n+1
-            EditDistRecursive(str1, str2, m + 1, n + 1),
-            EditDistRecursive(str1, str2, m + 1, n)
-        ) + 1
+        return 1 + min(
+            edit_dist_recursive(str1, str2, m, n + 1),      # 1)Insert into source string i.e m,n+1
+            edit_dist_recursive(str1, str2, m + 1, n + 1),  # 2)Replace the source string i.e m+1,n+1
+            edit_dist_recursive(str1, str2, m + 1, n)       # 3)Remove the character in source string
+        )
 
 
-def EditDist(str1, str2, m, n, depth=0):
+def edit_dist(str1, str2, m, n, depth=0):
+    """
+    In dynamic approach, we shall consider 'depth' of each node in the game tree.
+    Each node shall have 3 children for the three operations - insert, replace, remove.
+
+    The idea is that when there is a new node/operation to be performed, do it only if
+    its depth is not greater than the minimum depth.
+    """
+
     if m == len(str1) and n == len(str2):
         return depth
 
@@ -55,19 +63,24 @@ def EditDist(str1, str2, m, n, depth=0):
     nodes_dynamic.append([str1[m], str2[n], depth])
 
     if str1[m] == str2[n]:
-        return EditDist(str1, str2, m + 1, n + 1, depth)
+        return edit_dist(str1, str2, m + 1, n + 1, depth)
     else:
         depth += 1
         global min_depth
 
+        # if the next operation is going deeper than the minimum depth (of some previous solution/branch),
+        # then do not go any deeper
         if depth > min_depth:
             return depth
 
-        inserted = EditDist(str1, str2, m, n + 1, depth)
-        replaced = EditDist(str1, str2, m + 1, n + 1, depth)
-        removed = EditDist(str1, str2, m + 1, n, depth)
+        inserted = edit_dist(str1, str2, m, n + 1, depth)
+        replaced = edit_dist(str1, str2, m + 1, n + 1, depth)
+        removed = edit_dist(str1, str2, m + 1, n, depth)
 
         minimum = min(inserted, replaced, removed)
+
+        # If any of the three solutions yielded a solution that is shallower than min_depth,
+        # replace min_depth with new depth
         if minimum < min_depth:
             min_depth = minimum
 
@@ -75,11 +88,11 @@ def EditDist(str1, str2, m, n, depth=0):
 
 
 def main():
-    str1 = "Sunnyday"  # source string
+    str1 = "Sunday"    # source string
     str2 = "Saturday"  # Target string
 
-    print(EditDistRecursive(str1, str2, 0, 0))
-    print(EditDist(str1, str2, 0, 0))
+    print(edit_dist_recursive(str1, str2, 0, 0))
+    print(edit_dist(str1, str2, 0, 0))
 
     print(f'Number of recursive nodes = {len(nodes_recursive)}')
     print(f'Number of dynamic nodes = {len(nodes_dynamic)}')
